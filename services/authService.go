@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
 	"task-manager-plus/models"
 	"time"
 
@@ -49,11 +47,9 @@ func (as *AuthService) LoginCheck(username string, password string) (string, err
 	var user *models.User
 	filter := bson.M{"user_name": username}
 	err = as.users.FindOne(*as.ctx, filter).Decode(&user)
-	fmt.Println(user, password, username)
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(user, password)
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return "", err
@@ -66,16 +62,12 @@ func (as *AuthService) LoginCheck(username string, password string) (string, err
 }
 
 func generateToken(user_id primitive.ObjectID) (string, error) {
-	token_lifespan, err := strconv.Atoi(os.Getenv("TOKEN_HOUR_LIFESPAN"))
-	if err != nil {
-		return "", err
-	}
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["user_id"] = user_id
-	claims["exp"] = time.Now().Add(time.Hour * time.Duration(token_lifespan)).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * time.Duration(TOKEN_HOUR_LIFESPAN)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(os.Getenv("API_SECRET")))
+	return token.SignedString([]byte(API_SECRET))
 }
 
 func (as *AuthService) TokenValid(token string) error {
@@ -83,7 +75,7 @@ func (as *AuthService) TokenValid(token string) error {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("API_SECRET")), nil
+		return []byte(API_SECRET), nil
 	})
 	if err != nil {
 		return err
@@ -96,7 +88,7 @@ func (as *AuthService) ExtractTokenID(tokenString string) (primitive.ObjectID, e
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("API_SECRET")), nil
+		return []byte(API_SECRET), nil
 	})
 	if err != nil {
 		return primitive.NilObjectID, err
