@@ -3,8 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log"
 	"task-manager-plus/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,9 +13,9 @@ import (
 var _ IUserService = (*UserService)(nil)
 
 type IUserService interface {
-	GetUser(id string) (*models.UserRead, error)
-	UpdateUser(id string, user *models.UserUpdate) error
-	DeleteUser(id string) error
+	GetUser(id primitive.ObjectID) (*models.UserRead, error)
+	UpdateUser(id primitive.ObjectID, user *models.UserUpdate) error
+	DeleteUser(id primitive.ObjectID) error
 }
 
 type UserService struct {
@@ -32,22 +30,22 @@ func NewUserService() UserService {
 	}
 }
 
-func (us *UserService) GetUser(userIdStr string) (*models.UserRead, error) {
+func (us *UserService) GetUser(userId primitive.ObjectID) (*models.UserRead, error) {
 	var user *models.UserRead
-	userId, err := primitive.ObjectIDFromHex(userIdStr)
-	if err != nil {
-		return user, err
-	}
+	// userId, err := primitive.ObjectIDFromHex(userIdStr)
+	// if err != nil {
+	// 	return user, err
+	// }
 	filter := bson.M{"_id": userId}
-	err = us.users.FindOne(*us.ctx, filter).Decode(&user)
+	err := us.users.FindOne(*us.ctx, filter).Decode(&user)
 	return user, err
 }
 
-func (us *UserService) UpdateUser(userIdStr string, user *models.UserUpdate) error {
-	userId, err := primitive.ObjectIDFromHex(userIdStr)
-	if err != nil {
-		return err
-	}
+func (us *UserService) UpdateUser(userId primitive.ObjectID, user *models.UserUpdate) error {
+	// userId, err := primitive.ObjectIDFromHex(userIdStr)
+	// if err != nil {
+	// 	return err
+	// }
 	filter := bson.M{"_id": userId}
 	update := bson.M{
 		"$set": user.ToBSONM(),
@@ -59,11 +57,11 @@ func (us *UserService) UpdateUser(userIdStr string, user *models.UserUpdate) err
 	return nil
 }
 
-func (us *UserService) DeleteUser(userIdStr string) error {
-	userId, err := primitive.ObjectIDFromHex(userIdStr)
-	if err != nil {
-		return err
-	}
+func (us *UserService) DeleteUser(userId primitive.ObjectID) error {
+	// userId, err := primitive.ObjectIDFromHex(userIdStr)
+	// if err != nil {
+	// 	return err
+	// }
 	filter := bson.M{"_id": userId}
 	result, _ := us.users.DeleteOne(*us.ctx, filter)
 	if result.DeletedCount != 1 {
@@ -72,24 +70,24 @@ func (us *UserService) DeleteUser(userIdStr string) error {
 	return nil
 }
 
-func (us *UserService) TestSearch() {
-	model := mongo.IndexModel{
-		Keys: bson.M{"user_name": "text"},
-	}
-	_, err := us.users.Indexes().CreateOne(*us.ctx, model)
-	if err != nil {
-		panic(err)
-	}
-	filter := bson.M{"$text": bson.M{"$search": "r"}}
-	cursor, err := us.users.Find(context.Background(), filter)
-	result := make([]string, 0)
-	for cursor.Next(*us.ctx) {
-		var user models.User
-		err := cursor.Decode(&user)
-		if err != nil {
-			log.Fatal(err)
-		}
-		result = append(result, fmt.Sprintf("ID: %s, Username: %s\n", user.ID.Hex(), user.Username))
-	}
-	fmt.Println(result)
-}
+// func (us *UserService) TestSearch() {
+// 	model := mongo.IndexModel{
+// 		Keys: bson.M{"user_name": "text"},
+// 	}
+// 	_, err := us.users.Indexes().CreateOne(*us.ctx, model)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	filter := bson.M{"$text": bson.M{"$search": "r"}}
+// 	cursor, err := us.users.Find(context.Background(), filter)
+// 	result := make([]string, 0)
+// 	for cursor.Next(*us.ctx) {
+// 		var user models.User
+// 		err := cursor.Decode(&user)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 		result = append(result, fmt.Sprintf("ID: %s, Username: %s\n", user.ID.Hex(), user.Username))
+// 	}
+// 	fmt.Println(result)
+// }

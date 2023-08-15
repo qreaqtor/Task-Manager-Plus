@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"task-manager-plus/models"
 	"task-manager-plus/services"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserController struct {
@@ -19,8 +21,18 @@ func NewUserController() UserController {
 }
 
 func (uc *UserController) GetUser(ctx *gin.Context) {
-	uc.UserService.TestSearch()
-	var userId string = ctx.Param("id")
+	userId, _ := primitive.ObjectIDFromHex(ctx.Param("id"))
+	user, err := uc.UserService.GetUser(userId)
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, user)
+}
+
+func (uc *UserController) GetMe(ctx *gin.Context) {
+	userId := ctx.MustGet("userId").(primitive.ObjectID)
+	fmt.Println(userId)
 	user, err := uc.UserService.GetUser(userId)
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
@@ -30,7 +42,7 @@ func (uc *UserController) GetUser(ctx *gin.Context) {
 }
 
 func (uc *UserController) UpdateUser(ctx *gin.Context) {
-	var userId string = ctx.Param("id")
+	userId := ctx.MustGet("userId").(primitive.ObjectID)
 	var user models.UserUpdate
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
@@ -45,7 +57,7 @@ func (uc *UserController) UpdateUser(ctx *gin.Context) {
 }
 
 func (uc *UserController) DeleteUser(ctx *gin.Context) {
-	var userId string = ctx.Param("id")
+	userId := ctx.MustGet("userId").(primitive.ObjectID)
 	err := uc.UserService.DeleteUser(userId)
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
@@ -56,6 +68,7 @@ func (uc *UserController) DeleteUser(ctx *gin.Context) {
 
 func (uc *UserController) RegisterUserRoutes(rg *gin.RouterGroup) {
 	rg.GET("/get/:id", uc.GetUser)
-	rg.PATCH("/update/:id", uc.UpdateUser)
-	rg.DELETE("/delete/:id", uc.DeleteUser)
+	rg.GET("/get/me", uc.GetMe)
+	rg.PATCH("/update/", uc.UpdateUser)
+	rg.DELETE("/delete/", uc.DeleteUser)
 }

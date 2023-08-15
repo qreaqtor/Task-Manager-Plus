@@ -108,11 +108,20 @@ func (as *AuthService) ExtractTokenID(tokenString string) (primitive.ObjectID, e
 	return primitive.NilObjectID, nil
 }
 
-func (as *AuthService) GetUserByID(userId primitive.ObjectID) (models.UserRead, error) {
+func (as *AuthService) IsUserExists(userId primitive.ObjectID) error {
 	var user models.UserRead
 	query := bson.M{"_id": userId}
 	if err := as.users.FindOne(*as.ctx, query).Decode(&user); err != nil {
-		return user, errors.New("user not found")
+		return errors.New("current user not found")
 	}
-	return user, nil
+	return nil
 }
+
+// func (as *AuthService) GetUserByID(userId primitive.ObjectID) (models.UserRead, error) {
+// 	var user models.UserRead
+// 	query := bson.M{"_id": userId}
+// 	if err := as.users.FindOne(*as.ctx, query).Decode(&user); err != nil {
+// 		return user, errors.New("user not found")
+// 	}
+// 	return user, nil
+// }
