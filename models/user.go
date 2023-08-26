@@ -1,9 +1,6 @@
 package models
 
 import (
-	"reflect"
-
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -25,19 +22,4 @@ type UserRead struct {
 
 type UserUpdate struct {
 	Username string `json:"username" bson:"user_name" binding:"required"`
-}
-
-func (u *UserUpdate) ToBSONM() bson.M {
-	result := bson.M{}
-	v := reflect.ValueOf(*u)
-	t := v.Type()
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		value := v.Field(i)
-		bsonKey := field.Tag.Get("bson")
-		if bsonKey != "" {
-			result[bsonKey] = value.Interface()
-		}
-	}
-	return result
 }

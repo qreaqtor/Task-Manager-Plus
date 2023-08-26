@@ -32,25 +32,27 @@ func NewUserService() UserService {
 
 func (us *UserService) GetUser(userId primitive.ObjectID) (*models.UserRead, error) {
 	var user *models.UserRead
-	// userId, err := primitive.ObjectIDFromHex(userIdStr)
-	// if err != nil {
-	// 	return user, err
-	// }
 	filter := bson.M{"_id": userId}
 	err := us.users.FindOne(*us.ctx, filter).Decode(&user)
 	return user, err
 }
 
 func (us *UserService) UpdateUser(userId primitive.ObjectID, user *models.UserUpdate) error {
-	// userId, err := primitive.ObjectIDFromHex(userIdStr)
-	// if err != nil {
-	// 	return err
-	// }
 	filter := bson.M{"_id": userId}
-	update := bson.M{
-		"$set": user.ToBSONM(),
+	update, err := bson.Marshal(user)
+	if err != err {
+		return err
 	}
-	result, _ := us.users.UpdateOne(*us.ctx, filter, update)
+	var updateBSON bson.M
+	err = bson.Unmarshal(update, &updateBSON)
+	if err != nil {
+		return err
+	}
+	updateBSON = bson.M{"$set": updateBSON}
+	result, err := us.users.UpdateOne(*us.ctx, filter, updateBSON)
+	if err != nil {
+		return err
+	}
 	if result.MatchedCount != 1 {
 		return errors.New("no matched document found for update")
 	}
@@ -58,36 +60,13 @@ func (us *UserService) UpdateUser(userId primitive.ObjectID, user *models.UserUp
 }
 
 func (us *UserService) DeleteUser(userId primitive.ObjectID) error {
-	// userId, err := primitive.ObjectIDFromHex(userIdStr)
-	// if err != nil {
-	// 	return err
-	// }
 	filter := bson.M{"_id": userId}
-	result, _ := us.users.DeleteOne(*us.ctx, filter)
+	result, err := us.users.DeleteOne(*us.ctx, filter)
+	if err != err {
+		return err
+	}
 	if result.DeletedCount != 1 {
 		return errors.New("no matched document found for delete")
 	}
 	return nil
 }
-
-// func (us *UserService) TestSearch() {
-// 	model := mongo.IndexModel{
-// 		Keys: bson.M{"user_name": "text"},
-// 	}
-// 	_, err := us.users.Indexes().CreateOne(*us.ctx, model)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	filter := bson.M{"$text": bson.M{"$search": "r"}}
-// 	cursor, err := us.users.Find(context.Background(), filter)
-// 	result := make([]string, 0)
-// 	for cursor.Next(*us.ctx) {
-// 		var user models.User
-// 		err := cursor.Decode(&user)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		result = append(result, fmt.Sprintf("ID: %s, Username: %s\n", user.ID.Hex(), user.Username))
-// 	}
-// 	fmt.Println(result)
-// }

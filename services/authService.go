@@ -116,12 +116,3 @@ func (as *AuthService) IsUserExists(userId primitive.ObjectID) error {
 	}
 	return nil
 }
-
-// func (as *AuthService) GetUserByID(userId primitive.ObjectID) (models.UserRead, error) {
-// 	var user models.UserRead
-// 	query := bson.M{"_id": userId}
-// 	if err := as.users.FindOne(*as.ctx, query).Decode(&user); err != nil {
-// 		return user, errors.New("user not found")
-// 	}
-// 	return user, nil
-// }

@@ -57,18 +57,18 @@ func (ac *AuthController) JwtAuthMiddleware() gin.HandlerFunc {
 		token := ac.extractToken(c)
 		err := ac.AuthService.TokenValid(token)
 		if err != nil {
-			c.String(http.StatusUnauthorized, "Unauthorized")
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
 		}
 		userId, err := ac.AuthService.ExtractTokenID(token)
 		if err != nil {
-			c.String(http.StatusUnauthorized, fmt.Sprintf("error: %s", err.Error()))
+			c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("can't extract token: %s", err.Error())})
 			c.Abort()
 			return
 		}
 		if err = ac.AuthService.IsUserExists(userId); err != nil {
-			c.String(http.StatusUnauthorized, fmt.Sprintf("error: %s", err.Error()))
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
@@ -76,20 +76,6 @@ func (ac *AuthController) JwtAuthMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
-
-// func (ac *AuthController) currentUser(c *gin.Context) {
-// 	user_id, err := ac.AuthService.ExtractTokenID(ac.extractToken(c))
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
-// 	user, err := ac.AuthService.GetUserByID(user_id)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
-// 	c.JSON(http.StatusOK, gin.H{"message": "success", "data": user})
-// }
 
 func (ac *AuthController) extractToken(c *gin.Context) string {
 	bearerToken := c.Request.Header.Get("Authorization")
