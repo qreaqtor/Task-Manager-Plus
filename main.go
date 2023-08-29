@@ -19,5 +19,10 @@ func main() {
 	uc := controllers.NewUserController()
 	uc.RegisterUserRoutes(ucPath)
 
+	tcPath := server.Group("/tasks")
+	tcPath.Use(ac.JwtAuthMiddleware())
+	tc := controllers.NewTaskController()
+	tc.RegisterTasksRoutes(tcPath)
+
 	log.Fatal(server.Run(":8080"))
 }

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"task-manager-plus/models"
 	"task-manager-plus/services"
@@ -32,7 +31,6 @@ func (uc *UserController) GetUser(ctx *gin.Context) {
 
 func (uc *UserController) GetMe(ctx *gin.Context) {
 	userId := ctx.MustGet("userId").(primitive.ObjectID)
-	fmt.Println(userId)
 	user, err := uc.UserService.GetUser(userId)
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})

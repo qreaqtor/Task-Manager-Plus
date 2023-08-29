@@ -21,16 +21,12 @@ func NewAuthController() AuthController {
 }
 
 func (ac *AuthController) RegisterUser(ctx *gin.Context) {
-	var input *models.RegisterInput
-	if err := ctx.ShouldBindJSON(&input); err != nil {
+	var user *models.UserCreate
+	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user := models.UserCreate{
-		Username: input.Username,
-		Password: input.Password,
-	}
-	err := ac.AuthService.CreateUser(&user)
+	err := ac.AuthService.CreateUser(user)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -39,12 +35,12 @@ func (ac *AuthController) RegisterUser(ctx *gin.Context) {
 }
 
 func (ac *AuthController) Login(c *gin.Context) {
-	var input *models.LoginInput
+	var input models.LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	token, err := ac.AuthService.LoginCheck(input.Username, input.Password)
+	token, err := ac.AuthService.LoginCheck(input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("username or password is incorrect: %s", err)})
 		return

@@ -32,25 +32,30 @@ func NewAuthService() AuthService {
 	}
 }
 
-func (as *AuthService) CreateUser(user *models.UserCreate) error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+func (as *AuthService) CreateUser(userCreate *models.UserCreate) error {
+	var user models.User
+	query := bson.M{"username": userCreate.Username}
+	if err := as.users.FindOne(*as.ctx, query).Decode(&user); err == nil {
+		return errors.New("this username already exists")
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userCreate.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
-	user.Password = string(hashedPassword)
-	_, err = as.users.InsertOne(*as.ctx, user)
+	userCreate.Password = string(hashedPassword)
+	_, err = as.users.InsertOne(*as.ctx, userCreate)
 	return err
 }
 
-func (as *AuthService) LoginCheck(username string, password string) (string, error) {
+func (as *AuthService) LoginCheck(loginInput models.LoginInput) (string, error) {
 	var err error
 	var user *models.User
-	filter := bson.M{"user_name": username}
+	filter := bson.M{"username": loginInput.Username}
 	err = as.users.FindOne(*as.ctx, filter).Decode(&user)
 	if err != nil {
 		return "", err
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginInput.Password))
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return "", err
 	}
@@ -112,7 +117,7 @@ func (as *AuthService) IsUserExists(userId primitive.ObjectID) error {
 	var user models.UserRead
 	query := bson.M{"_id": userId}
 	if err := as.users.FindOne(*as.ctx, query).Decode(&user); err != nil {
-		return errors.New("current user not found")
+		return errors.New(fmt.Sprintf("current user not found: %s", err.Error()))
 	}
 	return nil
 }

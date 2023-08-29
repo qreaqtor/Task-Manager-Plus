@@ -15,6 +15,7 @@ import (
 var (
 	ctx                 context.Context
 	usersCollection     *mongo.Collection
+	tasksCollection     *mongo.Collection
 	API_SECRET          string
 	TOKEN_HOUR_LIFESPAN int
 )
@@ -40,4 +41,5 @@ func init() {
 	}
 
 	usersCollection = mongoclient.Database(dbName).Collection("users")
+	tasksCollection = mongoclient.Database(dbName).Collection("tasks")
 }
