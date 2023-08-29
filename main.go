@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"task-manager-plus/controllers"
+	"task-manager-plus-auth-users/controllers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,11 +18,6 @@ func main() {
 	ucPath.Use(ac.JwtAuthMiddleware())
 	uc := controllers.NewUserController()
 	uc.RegisterUserRoutes(ucPath)
-
-	tcPath := server.Group("/tasks")
-	tcPath.Use(ac.JwtAuthMiddleware())
-	tc := controllers.NewTaskController()
-	tc.RegisterTasksRoutes(tcPath)
 
 	log.Fatal(server.Run(":8080"))
 }

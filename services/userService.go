@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"errors"
-	"task-manager-plus/models"
+	"task-manager-plus-auth-users/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

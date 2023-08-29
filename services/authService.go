@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"task-manager-plus/models"
+	"task-manager-plus-auth-users/models"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"

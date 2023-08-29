@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"net/http"
-	"task-manager-plus/models"
-	"task-manager-plus/services"
+	"task-manager-plus-auth-users/models"
+	"task-manager-plus-auth-users/services"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"

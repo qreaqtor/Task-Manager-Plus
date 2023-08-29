@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"task-manager-plus/models"
-	"task-manager-plus/services"
+	"task-manager-plus-auth-users/models"
+	"task-manager-plus-auth-users/services"
 
 	"github.com/gin-gonic/gin"
 )
