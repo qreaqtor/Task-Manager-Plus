@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
 	"task-manager-plus-auth-users/models"
 	"time"
 
@@ -73,51 +72,4 @@ func generateToken(user_id primitive.ObjectID) (string, error) {
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(TOKEN_HOUR_LIFESPAN)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(API_SECRET))
-}
-
-func (as *AuthService) TokenValid(token string) error {
-	_, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(API_SECRET), nil
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (as *AuthService) ExtractTokenID(tokenString string) (primitive.ObjectID, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(API_SECRET), nil
-	})
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if ok && token.Valid {
-		userIdStr, ok := claims["user_id"].(string)
-		if !ok {
-			return primitive.NilObjectID, fmt.Errorf("user id claim is not a string")
-		}
-		userId, err := primitive.ObjectIDFromHex(userIdStr)
-		if err != nil {
-			return primitive.NilObjectID, err
-		}
-		return userId, nil
-	}
-	return primitive.NilObjectID, nil
-}
-
-func (as *AuthService) IsUserExists(userId primitive.ObjectID) error {
-	var user models.UserRead
-	query := bson.M{"_id": userId}
-	if err := as.users.FindOne(*as.ctx, query).Decode(&user); err != nil {
-		return errors.New(fmt.Sprintf("current user not found: %s", err.Error()))
-	}
-	return nil
 }

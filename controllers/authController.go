@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"strings"
 	"task-manager-plus-auth-users/models"
 	"task-manager-plus-auth-users/services"
 
@@ -46,39 +45,6 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"token": token})
-}
-
-func (ac *AuthController) JwtAuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		token := ac.extractToken(c)
-		err := ac.AuthService.TokenValid(token)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-			c.Abort()
-			return
-		}
-		userId, err := ac.AuthService.ExtractTokenID(token)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("can't extract token: %s", err.Error())})
-			c.Abort()
-			return
-		}
-		if err = ac.AuthService.IsUserExists(userId); err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			c.Abort()
-			return
-		}
-		c.Set("userId", userId)
-		c.Next()
-	}
-}
-
-func (ac *AuthController) extractToken(c *gin.Context) string {
-	bearerToken := c.Request.Header.Get("Authorization")
-	if len(strings.Split(bearerToken, " ")) == 2 {
-		return strings.Split(bearerToken, " ")[1]
-	}
-	return ""
 }
 
 func (ac *AuthController) RegisterAuthRoutes(rg *gin.RouterGroup) {
