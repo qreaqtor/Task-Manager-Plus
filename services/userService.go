@@ -6,16 +6,15 @@ import (
 	"task-manager-plus-auth-users/models"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var _ IUserService = (*UserService)(nil)
 
 type IUserService interface {
-	GetUser(id primitive.ObjectID) (*models.UserRead, error)
-	UpdateUser(id primitive.ObjectID, user *models.UserUpdate) error
-	DeleteUser(id primitive.ObjectID) error
+	GetUser(username string) (*models.UserRead, error)
+	UpdateUser(username string, user *models.UserUpdate) error
+	DeleteUser(username string) error
 }
 
 type UserService struct {
@@ -30,15 +29,15 @@ func NewUserService() UserService {
 	}
 }
 
-func (us *UserService) GetUser(userId primitive.ObjectID) (*models.UserRead, error) {
+func (us *UserService) GetUser(username string) (*models.UserRead, error) {
 	var user *models.UserRead
-	filter := bson.M{"_id": userId}
+	filter := bson.M{"username": username}
 	err := us.users.FindOne(*us.ctx, filter).Decode(&user)
 	return user, err
 }
 
-func (us *UserService) UpdateUser(userId primitive.ObjectID, user *models.UserUpdate) error {
-	filter := bson.M{"_id": userId}
+func (us *UserService) UpdateUser(username string, user *models.UserUpdate) error {
+	filter := bson.M{"username": username}
 	update, err := bson.Marshal(user)
 	if err != err {
 		return err
@@ -59,8 +58,8 @@ func (us *UserService) UpdateUser(userId primitive.ObjectID, user *models.UserUp
 	return nil
 }
 
-func (us *UserService) DeleteUser(userId primitive.ObjectID) error {
-	filter := bson.M{"_id": userId}
+func (us *UserService) DeleteUser(username string) error {
+	filter := bson.M{"username": username}
 	result, err := us.users.DeleteOne(*us.ctx, filter)
 	if err != err {
 		return err

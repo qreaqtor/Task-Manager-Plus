@@ -8,7 +8,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -58,17 +57,17 @@ func (as *AuthService) LoginCheck(loginInput models.LoginInput) (string, error) 
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return "", err
 	}
-	token, err := generateToken(user.ID)
+	token, err := generateToken(user.Username)
 	if err != nil {
 		return "", err
 	}
 	return token, nil
 }
 
-func generateToken(user_id primitive.ObjectID) (string, error) {
+func generateToken(username string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
-	claims["user_id"] = user_id
+	claims["username"] = username
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(TOKEN_HOUR_LIFESPAN)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(API_SECRET))

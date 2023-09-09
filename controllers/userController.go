@@ -6,7 +6,6 @@ import (
 	"task-manager-plus-auth-users/services"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserController struct {
@@ -20,12 +19,8 @@ func NewUserController() UserController {
 }
 
 func (uc *UserController) GetUser(ctx *gin.Context) {
-	userId, err := primitive.ObjectIDFromHex(ctx.Param("id"))
-	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
-		return
-	}
-	user, err := uc.UserService.GetUser(userId)
+	username := ctx.Param("username")
+	user, err := uc.UserService.GetUser(username)
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		return
@@ -34,17 +29,13 @@ func (uc *UserController) GetUser(ctx *gin.Context) {
 }
 
 func (uc *UserController) UpdateUser(ctx *gin.Context) {
-	userId, err := primitive.ObjectIDFromHex(ctx.Param("id"))
-	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
-		return
-	}
+	username := ctx.Param("username")
 	var user models.UserUpdate
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-	err = uc.UserService.UpdateUser(userId, &user)
+	err := uc.UserService.UpdateUser(username, &user)
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		return
@@ -53,12 +44,8 @@ func (uc *UserController) UpdateUser(ctx *gin.Context) {
 }
 
 func (uc *UserController) DeleteUser(ctx *gin.Context) {
-	userId, err := primitive.ObjectIDFromHex(ctx.Param("id"))
-	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
-		return
-	}
-	err = uc.UserService.DeleteUser(userId)
+	username := ctx.Param("username")
+	err := uc.UserService.DeleteUser(username)
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		return
@@ -67,7 +54,7 @@ func (uc *UserController) DeleteUser(ctx *gin.Context) {
 }
 
 func (uc *UserController) RegisterUserRoutes(rg *gin.RouterGroup) {
-	rg.GET("/get/:id", uc.GetUser)
-	rg.PATCH("/update/:id", uc.UpdateUser)
-	rg.DELETE("/delete/:id", uc.DeleteUser)
+	rg.GET("/get/:username", uc.GetUser)
+	rg.PATCH("/update/:username", uc.UpdateUser)
+	rg.DELETE("/delete/:username", uc.DeleteUser)
 }
