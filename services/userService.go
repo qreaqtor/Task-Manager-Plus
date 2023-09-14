@@ -38,16 +38,7 @@ func (us *UserService) GetUser(username string) (*models.UserRead, error) {
 
 func (us *UserService) UpdateUser(username string, user *models.UserUpdate) error {
 	filter := bson.M{"username": username}
-	update, err := bson.Marshal(user)
-	if err != err {
-		return err
-	}
-	var updateBSON bson.M
-	err = bson.Unmarshal(update, &updateBSON)
-	if err != nil {
-		return err
-	}
-	updateBSON = bson.M{"$set": updateBSON}
+	updateBSON := bson.M{"$set": user}
 	result, err := us.users.UpdateOne(*us.ctx, filter, updateBSON)
 	if err != nil {
 		return err

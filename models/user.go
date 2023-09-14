@@ -26,6 +26,6 @@ type UserRead struct {
 }
 
 type UserUpdate struct {
-	FirstName string `json:"firstName" bson:"firstName"`
-	LastName  string `json:"lastName" bson:"lastName"`
+	FirstName string `json:"firstName" bson:"firstName,omitempty" binding:"-"`
+	LastName  string `json:"lastName" bson:"lastName,omitempty" binding:"-"`
 }

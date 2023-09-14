@@ -46,10 +46,9 @@ func (as *AuthService) CreateUser(userCreate *models.UserCreate) error {
 }
 
 func (as *AuthService) LoginCheck(loginInput models.LoginInput) (string, error) {
-	var err error
 	var user *models.User
 	filter := bson.M{"username": loginInput.Username}
-	err = as.users.FindOne(*as.ctx, filter).Decode(&user)
+	err := as.users.FindOne(*as.ctx, filter).Decode(&user)
 	if err != nil {
 		return "", err
 	}
